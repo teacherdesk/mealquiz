@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import axios from 'axios';
 import extractInitials from './extractInitials';
 import './App.css';
@@ -16,7 +16,10 @@ import {
   ListItemText,
   Card,
   CardContent,
-  Box
+  Box,
+  Dialog,
+  DialogContent,
+  DialogActions
 } from '@mui/material';
 
 const App = () => {
@@ -29,6 +32,9 @@ const App = () => {
   const [selectedSchool, setSelectedSchool] = useState(null);
   const [currentQuizIndex, setCurrentQuizIndex] = useState(0);
   const [showAnswer, setShowAnswer] = useState(false);
+  const [openDialog, setOpenDialog] = useState(false);
+  const [fontSize, setFontSize] = useState('10rem');
+  const quizTextRef = useRef(null);
 
   useEffect(() => {
     const savedSchool = JSON.parse(localStorage.getItem('selectedSchool'));
@@ -55,7 +61,7 @@ const App = () => {
         },
       });
       if (response.data.mealServiceDietInfo) {
-        const mealList = extractValidDishNames(response.data.mealServiceDietInfo[1].row[0].DDISH_NM)
+        const mealList = extractValidDishNames(response.data.mealServiceDietInfo[1].row[0].DDISH_NM);
         setMeals(mealList);
         setCurrentQuizIndex(0);  // Reset quiz index when new meals are fetched
       } else {
@@ -115,24 +121,6 @@ const App = () => {
     localStorage.setItem('selectedSchool', JSON.stringify(school));
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!selectedSchool) {
-      setError('학교를 선택하세요.');
-      return;
-    }
-    setLoading(true);
-    setError(null);
-
-    try {
-      await fetchMeals(selectedSchool.SD_SCHUL_CODE, selectedSchool.ATPT_OFCDC_SC_CODE, mealDate);
-    } catch (error) {
-      setError(error.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleShowAnswer = () => {
     setShowAnswer(true);
   };
@@ -152,6 +140,40 @@ const App = () => {
     const validDishes = dishes.map(dish => dish.replace(/\s*\(\d+(\.\d+)*\)\s*/g, '').trim());
     return validDishes;
   };
+
+  const handleOpenDialog = () => {
+    setOpenDialog(true);
+  };
+
+  const handleCloseDialog = () => {
+    setOpenDialog(false);
+  };
+
+  useEffect(() => {
+    const adjustFontSize = () => {
+      if (quizTextRef.current) {
+        let parentWidth = quizTextRef.current.parentElement.offsetWidth;
+        let textWidth = quizTextRef.current.scrollWidth;
+
+        if (textWidth > parentWidth) {
+          let newSize = parseFloat(fontSize);
+          while (textWidth > parentWidth && newSize > 1) {
+            newSize -= 1;
+            quizTextRef.current.style.fontSize = `${newSize}rem`;
+            textWidth = quizTextRef.current.scrollWidth;
+          }
+          setFontSize(`${newSize}rem`);
+        }
+      }
+    };
+
+    adjustFontSize();
+    window.addEventListener('resize', adjustFontSize);
+
+    return () => {
+      window.removeEventListener('resize', adjustFontSize);
+    };
+  }, [fontSize, currentQuizIndex]);
 
   return (
     <div className="app-container">
@@ -199,19 +221,14 @@ const App = () => {
                   <Button variant="outlined" color="secondary" onClick={() => setSelectedSchool(null)} fullWidth>
                     학교 변경
                   </Button>
-                  <form onSubmit={handleSubmit}>
-                    <TextField
-                      label="급식일자"
-                      value={mealDate}
-                      readOnly
-                      fullWidth
-                      variant="outlined"
-                      margin="normal"
-                    />
-                    <Button variant="contained" color="primary" type="submit" fullWidth>
-                      조회
-                    </Button>
-                  </form>
+                  <TextField
+                    label="급식일자"
+                    value={mealDate}
+                    readOnly
+                    fullWidth
+                    variant="outlined"
+                    margin="normal"
+                  />
                 </CardContent>
               </Card>
             )}
@@ -219,29 +236,53 @@ const App = () => {
             {error && <Typography color="error">Error: {error}</Typography>}
             {meals.length > 0 && (
               <Box mt={4}>
-                <Typography variant="h5">
-                  급식 퀴즈
-                </Typography>
-                <Card>
-                  <CardContent>
-                    <Typography variant="h4" component="div" gutterBottom>
-                      {extractInitials(meals[currentQuizIndex])}
-                    </Typography>
-                    {showAnswer && (
-                      <Typography variant="h6" color="textSecondary">
-                        정답: {meals[currentQuizIndex]}
+                <Button variant="contained" color="primary" onClick={handleOpenDialog} fullWidth>
+                  전체 화면 퀴즈 시작
+                </Button>
+                <Dialog fullScreen open={openDialog} onClose={handleCloseDialog}>
+                  <AppBar position="static">
+                    <Toolbar>
+                      <Button color="inherit" onClick={handleCloseDialog}>
+                        닫기
+                      </Button>
+                      <Typography variant="h6" style={{ flex: 1, textAlign: 'center' }}>
+                        School Meals Quiz
                       </Typography>
-                    )}
-                    <Box mt={2}>
-                      <Button variant="contained" color="primary" onClick={handleShowAnswer} fullWidth>
-                        확인
-                      </Button>
-                      <Button variant="contained" color="secondary" onClick={handleNextQuiz} fullWidth sx={{ mt: 1 }}>
-                        다음
-                      </Button>
+                    </Toolbar>
+                  </AppBar>
+                  <DialogContent>
+                    <Box display="flex" flexDirection="column" alignItems="center" justifyContent="center" height="100vh">
+                      <Typography
+                        variant="h1"
+                        component="div"
+                        align="center"
+                        gutterBottom
+                        style={{ fontSize, fontWeight: 'bold' }}
+                        ref={quizTextRef}
+                      >
+                        {extractInitials(meals[currentQuizIndex])}
+                      </Typography>
+                      {showAnswer && (
+                        <Typography
+                          variant="h3"
+                          color="textSecondary"
+                          align="center"
+                          style={{ fontSize: '5rem', fontWeight: 'bold' }}
+                        >
+                          정답: {meals[currentQuizIndex]}
+                        </Typography>
+                      )}
                     </Box>
-                  </CardContent>
-                </Card>
+                  </DialogContent>
+                  <DialogActions style={{ justifyContent: 'center', paddingBottom: '20px' }}>
+                    <Button variant="contained" color="primary" onClick={handleShowAnswer}>
+                      확인
+                    </Button>
+                    <Button variant="contained" color="secondary" onClick={handleNextQuiz} style={{ marginLeft: '10px' }}>
+                      다음
+                    </Button>
+                  </DialogActions>
+                </Dialog>
               </Box>
             )}
           </Box>
@@ -252,4 +293,4 @@ const App = () => {
   );
 };
 
-export default App
+export default App;
