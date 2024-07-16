@@ -16,11 +16,9 @@ import {
   ListItemText,
   Card,
   CardContent,
-  Box,
-  Dialog,
-  DialogContent,
-  DialogActions
+  Box
 } from '@mui/material';
+import QuizDialog from './QuizDialog';
 
 const App = () => {
   const [meals, setMeals] = useState([]);
@@ -30,11 +28,7 @@ const App = () => {
   const [mealDate, setMealDate] = useState('');
   const [schoolResults, setSchoolResults] = useState([]);
   const [selectedSchool, setSelectedSchool] = useState(null);
-  const [currentQuizIndex, setCurrentQuizIndex] = useState(0);
-  const [showAnswer, setShowAnswer] = useState(false);
   const [openDialog, setOpenDialog] = useState(false);
-  const [fontSize, setFontSize] = useState('10rem');
-  const quizTextRef = useRef(null);
 
   useEffect(() => {
     const savedSchool = JSON.parse(localStorage.getItem('selectedSchool'));
@@ -63,7 +57,6 @@ const App = () => {
       if (response.data.mealServiceDietInfo) {
         const mealList = extractValidDishNames(response.data.mealServiceDietInfo[1].row[0].DDISH_NM);
         setMeals(mealList);
-        setCurrentQuizIndex(0);  // Reset quiz index when new meals are fetched
       } else {
         setMeals([]);
       }
@@ -121,15 +114,6 @@ const App = () => {
     localStorage.setItem('selectedSchool', JSON.stringify(school));
   };
 
-  const handleShowAnswer = () => {
-    setShowAnswer(true);
-  };
-
-  const handleNextQuiz = () => {
-    setShowAnswer(false);
-    setCurrentQuizIndex((prevIndex) => (prevIndex + 1) % meals.length);
-  };
-
   const extractValidDishNames = (dishName) => {
     if (typeof dishName !== 'string') {
       return [];
@@ -148,32 +132,6 @@ const App = () => {
   const handleCloseDialog = () => {
     setOpenDialog(false);
   };
-
-  useEffect(() => {
-    const adjustFontSize = () => {
-      if (quizTextRef.current) {
-        let parentWidth = quizTextRef.current.parentElement.offsetWidth;
-        let textWidth = quizTextRef.current.scrollWidth;
-
-        if (textWidth > parentWidth) {
-          let newSize = parseFloat(fontSize);
-          while (textWidth > parentWidth && newSize > 1) {
-            newSize -= 1;
-            quizTextRef.current.style.fontSize = `${newSize}rem`;
-            textWidth = quizTextRef.current.scrollWidth;
-          }
-          setFontSize(`${newSize}rem`);
-        }
-      }
-    };
-
-    adjustFontSize();
-    window.addEventListener('resize', adjustFontSize);
-
-    return () => {
-      window.removeEventListener('resize', adjustFontSize);
-    };
-  }, [fontSize, currentQuizIndex]);
 
   return (
     <div className="app-container">
@@ -239,50 +197,7 @@ const App = () => {
                 <Button variant="contained" color="primary" onClick={handleOpenDialog} fullWidth>
                   전체 화면 퀴즈 시작
                 </Button>
-                <Dialog fullScreen open={openDialog} onClose={handleCloseDialog}>
-                  <AppBar position="static">
-                    <Toolbar>
-                      <Button color="inherit" onClick={handleCloseDialog}>
-                        닫기
-                      </Button>
-                      <Typography variant="h6" style={{ flex: 1, textAlign: 'center' }}>
-                        School Meals Quiz
-                      </Typography>
-                    </Toolbar>
-                  </AppBar>
-                  <DialogContent>
-                    <Box display="flex" flexDirection="column" alignItems="center" justifyContent="center" height="100vh">
-                      <Typography
-                        variant="h1"
-                        component="div"
-                        align="center"
-                        gutterBottom
-                        style={{ fontSize, fontWeight: 'bold' }}
-                        ref={quizTextRef}
-                      >
-                        {extractInitials(meals[currentQuizIndex])}
-                      </Typography>
-                      {showAnswer && (
-                        <Typography
-                          variant="h3"
-                          color="textSecondary"
-                          align="center"
-                          style={{ fontSize: '5rem', fontWeight: 'bold' }}
-                        >
-                          정답: {meals[currentQuizIndex]}
-                        </Typography>
-                      )}
-                    </Box>
-                  </DialogContent>
-                  <DialogActions style={{ justifyContent: 'center', paddingBottom: '20px' }}>
-                    <Button variant="contained" color="primary" onClick={handleShowAnswer}>
-                      확인
-                    </Button>
-                    <Button variant="contained" color="secondary" onClick={handleNextQuiz} style={{ marginLeft: '10px' }}>
-                      다음
-                    </Button>
-                  </DialogActions>
-                </Dialog>
+                <QuizDialog open={openDialog} onClose={handleCloseDialog} meals={meals} />
               </Box>
             )}
           </Box>
