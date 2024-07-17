@@ -112,6 +112,10 @@ const QuizDialog = ({ open, onClose, meals }) => {
       console.error('Failed to copy: ', err);
     }
   };
+  const isSpecialLine = (line) => {
+    // 특수문자 줄을 확인하는 함수
+    return line.split('').every(char => ['■', '□'].includes(char));
+  };
 
   return (
     <Dialog fullScreen open={open} onClose={onClose}>
@@ -159,13 +163,13 @@ const QuizDialog = ({ open, onClose, meals }) => {
               autoComplete="off"
             />
           </Box>
-          <Box display="flex" flexDirection="column" alignItems="flex-start" marginRight="20px" overflow="auto" flex={2}>
+          <Box display="flex" flexDirection="column" alignItems="flex-start" marginRight="20px" style={{ overflowX: 'auto', maxHeight: '80vh' }} flex={2} >
             {previousAnswers.map((answer, index) => (
               <Box key={index} display="flex" alignItems="center" marginTop="10px">
                 <Typography variant="h6" component="div" style={{ marginRight: '10px' }}>
                   {index + 1}.
                 </Typography>
-                <Typography variant="h6" component="div">
+                <Typography variant="h6" component="div" style={{ whiteSpace: 'nowrap' }}>
                   {highlightCorrectLetters(answer, meals[currentQuizIndex])}
                 </Typography>
               </Box>
@@ -185,19 +189,23 @@ const QuizDialog = ({ open, onClose, meals }) => {
         <DialogTitle>정답</DialogTitle>
         <DialogContent dividers style={{ maxHeight: '60vh', overflow: 'auto' }}>
           <Box display="flex" flexDirection="column" alignItems="center" justifyContent="center">
-            <Typography variant="body1" style={{ whiteSpace: 'pre-line', textAlign: 'center' }}>
-              {clipboardText.split('\n').map((line, index) => (
-                <span key={index}>
-                  {line}
-                  <br />
-                </span>
-              ))}
+          <Typography variant="body1" style={{ whiteSpace: 'pre-line', textAlign: 'center' }}>
+          {previousAnswers.map((answer, index) => (
+              <Box key={index} display="flex" alignItems="center" marginTop="10px">
+                <Typography variant="h6" component="div" style={{ marginRight: '10px' }}>
+                  {index + 1}.
+                </Typography>
+                <Typography variant="h6" component="div">
+                  {highlightCorrectLetters(answer, meals[currentQuizIndex])}
+                </Typography>
+              </Box>
+            ))}
             </Typography>
           </Box>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleSave} color="primary">
-            저장
+            복사하기
           </Button>
           <Button onClick={() => setCorrectAnswer(false)} color="primary">
             확인

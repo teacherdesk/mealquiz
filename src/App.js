@@ -36,7 +36,9 @@ const App = () => {
       setSelectedSchool(savedSchool);
       setSchoolName(savedSchool.SCHUL_NM);
     }
-    setMealDate(new Date().toISOString().slice(0, 10).replace(/-/g, '')); // 오늘 날짜로 설정
+    const koreaTime = new Date().toLocaleString("en-US", { timeZone: "Asia/Seoul" });
+    const koreaDate = new Date(koreaTime);
+    setMealDate(koreaDate.toISOString().slice(0, 10).replace(/-/g, '')); // 오늘 날짜로 설정
   }, []);
 
   const fetchMeals = useCallback(async (schoolCode, educationOfficeCode, mealDate) => {
