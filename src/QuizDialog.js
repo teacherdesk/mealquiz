@@ -81,26 +81,61 @@ const QuizDialog = ({ open, onClose, meals }) => {
     }
   };
 
-  const highlightCorrectLetters = (input, correct) => {
-    return (
-      <div style={{ display: 'flex', justifyContent: 'center' }}>
-        {input.split('').map((char, index) => (
-          <div key={index} style={{ display: 'inline-block', textAlign: 'center', margin: '0 5px' }}>
-            <div>{char === correct[index] ? '■' : '□'}</div>
+  // 기호를 식별하는 함수 (공백은 예외로 둠)
+const isSpecialCharacter = (char) => !/[a-zA-Z0-9가-힣\s]/.test(char);
+
+const highlightCorrectLetters = (input, correct) => {
+  return (
+    <div style={{ display: 'flex', justifyContent: 'center' }}>
+      {correct.split('').map((char, index) => {
+        let displayChar;
+
+        if (char === ' ') {
+          // 정답이 공백인데 입력이 공백이 아닌 경우 틀린 것으로 간주하여 '_'
+          displayChar = input[index] === ' ' ? ' ' : '_';
+        } else if (isSpecialCharacter(char)) {
+          // 기호는 맞든 틀리든 그대로 표시
+          displayChar = char;
+        } else {
+          // 공백과 기호가 아닌 경우 알파벳, 숫자, 한글 비교
+          displayChar = input[index] === char ? '■' : '□';
+        }
+
+        return (
+          <div
+            key={index}
+            style={{
+              display: 'inline-block',
+              textAlign: 'center',
+              margin: '0 5px',
+              fontSize: '1.4rem',
+              lineHeight: '1.6rem',
+            }}
+          >
+            <div>{displayChar}</div>
             <div>{char}</div>
           </div>
-        ))}
-      </div>
-    );
-  };
+        );
+      })}
+    </div>
+  );
+};
 
   const generateClipboardText = (answers, correct) => {
     return answers.map((answer, index) => {
-      const emojiLine = answer.split('').map((char, i) => (char === correct[i] ? '■' : '□')).join(' ');
+      const emojiLine = answer.split('').map((char, i) => {
+        if (isSpecialCharacter(correct[i])) {
+          return correct[i]; // 기호는 맞든 틀리든 그대로 표시
+        } else {
+          return char === correct[i] ? '■' : '_'; // 알파벳, 숫자, 한글만 강조
+        }
+      }).join(' ');
+  
       const charLine = answer.split('').join(' ');
       return `\n${emojiLine}\n${charLine}`;
     }).join('');
   };
+  
   ///클립보드에 복사하는 코드
   const handleSave = async () => {
     const problem = extractInitials(meals[currentQuizIndex]).split('').join(' ');
