@@ -184,7 +184,7 @@ const generateTextFromHighlight = (answer, correct) => {
   ///클립보드에 복사하는 코드
   const handleSave = async () => {
     const problem = extractInitials(meals[currentQuizIndex]).split('').join(' ');
-    const textToCopy = `${problem}\n${clipboardText}\n\nhttps://mealsquiz.vercel.app/`;
+    const textToCopy = `${problem}\n${clipboardText}\n\nhttps://mealquiz.vercel.app/`;
   
     try {
       await navigator.clipboard.writeText(textToCopy);
