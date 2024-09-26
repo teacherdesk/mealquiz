@@ -115,8 +115,8 @@ const QuizDialog = ({ open, onClose, meals }) => {
                 display: 'inline-block',
                 textAlign: 'center',
                 margin: '0 5px',
-                fontSize: '1rem',
-                lineHeight: '1.2rem',
+                fontSize: '2rem',
+                lineHeight: '2.2rem',
               }}
             >
               <div>{displayChar}</div>
@@ -161,27 +161,6 @@ const generateTextFromHighlight = (answer, correct) => {
   }).join('');
 };
 
-// // 클립보드에 텍스트 복사
-// const handleSaveToClipboard = async (userAnswer, correct) => {
-//   // highlightCorrectLetters 함수의 텍스트 결과 생성
-//   const clipboardText = generateTextFromHighlight(userAnswer, correct);
-  
-//   try {
-//     await navigator.clipboard.writeText(clipboardText);
-//     console.log('클립보드에 복사되었습니다: ', clipboardText);
-//   } catch (err) {
-//     console.error('클립보드 복사 실패: ', err);
-//   }
-// };
-
-  // const generateClipboardText = (answers, correct) => {
-  //   return answers.map((answer, index) => {
-  //     const emojiLine = answer.split('').map((char, i) => (char === correct[i] ? '■' : '□')).join(' ');
-  //     const charLine = answer.split('').join(' ');
-  //     return `\n${emojiLine}\n${charLine}`;
-  //   }).join('');
-  // };
-  ///클립보드에 복사하는 코드
   const handleSave = async () => {
     const problem = extractInitials(meals[currentQuizIndex]).split('').join(' ');
     const textToCopy = `${problem}\n${clipboardText}\n\nhttps://schoolquiz.vercel.app/`;
@@ -243,13 +222,13 @@ const generateTextFromHighlight = (answer, correct) => {
               autoComplete="off"
             />
           </Box>
-          <Box display="flex" flexDirection="column" alignItems="flex-start" marginRight="20px" style={{ overflowX: 'auto', maxHeight: '80vh' }} flex={2} >
+          <Box display="flex" flexDirection="column" alignItems="flex-start" marginRight="20px" style={{ overflowX: 'auto', maxHeight: '80vh' , fontSize: '20px'}} flex={2} >
             {previousAnswers.map((answer, index) => (
               <Box key={index} display="flex" alignItems="center" marginTop="10px">
-                <Typography variant="h6" component="div" style={{ marginRight: '10px' }}>
+                <Typography variant="h5" component="div" style={{ marginRight: '10px' }}>
                   {index + 1}.
                 </Typography>
-                <Typography variant="h6" component="div" style={{ whiteSpace: 'nowrap' }}>
+                <Typography variant="h5" component="div" style={{ whiteSpace: 'nowrap' }}>
                   {highlightCorrectLetters(answer, meals[currentQuizIndex])}
                 </Typography>
               </Box>
