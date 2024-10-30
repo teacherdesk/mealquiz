@@ -137,7 +137,10 @@ const App = () => {
 
   return (
     <div className="app-container">
-      <div className="side-image left-image" style={{ backgroundImage: `url(${leftImage})` }}></div>
+      <a href="https://teacherdesk.vercel.app" target="_blank" rel="noopener noreferrer">
+       <div className="side-image left-image" style={{ backgroundImage: `url(${leftImage})` }}></div>
+      </a>
+      
       <div className="main-content">
         <AppBar position="static">
           <Toolbar>
@@ -205,7 +208,10 @@ const App = () => {
           </Box>
         </Container>
       </div>
-      <div className="side-image right-image" style={{ backgroundImage: `url(${rightImage})` }}></div>
+      <a href="https://teacherdesk.vercel.app" target="_blank" rel="noopener noreferrer">
+       <div className="side-image right-image" style={{ backgroundImage: `url(${rightImage})` }}></div>
+      </a>
+      
     </div>
   );
 };
