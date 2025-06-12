@@ -163,7 +163,7 @@ const generateTextFromHighlight = (answer, correct) => {
 
   const handleSave = async () => {
     const problem = extractInitials(meals[currentQuizIndex]).split('').join(' ');
-    const textToCopy = `${problem}\n${clipboardText}\n\nhttps://schoolquiz.vercel.app/`;
+    const textToCopy = `${problem}\n${clipboardText}\n\nhttps://mealquiz.tdesk24.com/\n밀퀴즈`;
   
     try {
       await navigator.clipboard.writeText(textToCopy);
